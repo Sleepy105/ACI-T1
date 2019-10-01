@@ -12,6 +12,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include "ModbusAP.h"
+
 
 // Read_h_regs( ) / Write_multiple_regs ()
 // Get_Request( ) / Send_Response ()
