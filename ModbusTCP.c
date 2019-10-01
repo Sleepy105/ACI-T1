@@ -7,4 +7,5 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include "ModbusTCP.h"
 // Send_Modbus_request() / Receive_Modbus_request() / Send_Modbus_response()
