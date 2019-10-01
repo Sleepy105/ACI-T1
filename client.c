@@ -13,10 +13,7 @@
 
 
 void socket_write(int s, char* str) {
-    /*long pos = 0;
-    while (pos < strlen(str) + 1) {
-        pos += write(s, str + pos, strlen(str) + 1 - pos);
-    }*/
+
 	send(s, str, strlen(str), 0);
 }
 
