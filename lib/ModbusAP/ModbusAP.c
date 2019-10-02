@@ -106,7 +106,7 @@ int16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, bool
     
     uint8_t r_code = r_apdu[0];
     uint8_t r_val;
-    if(r_code==0x10){
+    if(r_code==0x0F){
         //no error 
     }
     else {
@@ -126,7 +126,7 @@ int16_t Read_coils(char* server_add, int port, int st_c, int n_c, bool* val){
     uint8_t* apdu=malloc(apdu_size);
     
     //Write header
-    apdu[0]=0x03;
+    apdu[0]=0x01;
     apdu[1]=((st_r) & 0xFF00)>>8; apdu[2]=((st_r) & 0x00FF)>>0;  
     apdu[3]=((n_r) & 0xFF00)>>8; apdu[4]=((n_r) & 0x00FF)>>0;    
     
@@ -138,7 +138,7 @@ int16_t Read_coils(char* server_add, int port, int st_c, int n_c, bool* val){
     
     uint8_t r_code = r_apdu[0];
     uint8_t r_val;
-    if(r_code==0x03){
+    if(r_code==0x01){
         //no error 
     }
     else {
