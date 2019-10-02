@@ -87,7 +87,7 @@ int16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, bool
     uint8_t* apdu=malloc(apdu_size);
     
     //Write header
-    apdu[0]=0x10;
+    apdu[0]=0x0F;
     apdu[1]=((st_r) & 0xFF00)>>8; apdu[2]=((st_r) & 0x00FF)>>0;  
     apdu[3]=((n_r) & 0xFF00)>>8; apdu[4]=((n_r) & 0x00FF)>>0;    
     apdu[5]=2*n_r;
