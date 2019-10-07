@@ -16,7 +16,11 @@
 #define INVALID_ADDRESS -1
 #define TOO_MANY_VALUES -2
 #define ERROR_REQUEST -3
-#define  NO_ERROR = 0x00
+#define NO_ERROR  0x00
+#define ILLEGAL_FUNCTION  0x01
+#define ILLEGAL_DATA_ADDRESS  0x02
+#define ILLEGAL_DATA_VALUE  0x03
+#define LAVE_DEVICE_FAILURE 0x04
 
 /**
  * @brief Send n_r registers to a host located in server_add

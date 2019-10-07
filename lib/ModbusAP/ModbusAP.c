@@ -29,7 +29,9 @@ uint16_t Get_request (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* 
 
 uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
     // prepare and send response APDU
-    Send_Modbus_response (TI, APDU_R , APDU_Rlen);
+    uint8_t* resp_apdu;
+    uint16_t resp_apdu_size;
+    Send_Modbus_response (TI, resp_apdu , resp_apdu_size);
     // returns: >0 ok, <0 error
     return 0;
 }
