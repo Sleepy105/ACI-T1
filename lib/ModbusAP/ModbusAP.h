@@ -21,6 +21,8 @@
 #define ILLEGAL_DATA_ADDRESS  0x02
 #define ILLEGAL_DATA_VALUE  0x03
 #define LAVE_DEVICE_FAILURE 0x04
+#define READ_REGS 0x03 
+#define WRITE_REGS 0x10
 
 /**
  * @brief Send n_r registers to a host located in server_add
@@ -74,5 +76,9 @@ uint16_t Get_request (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* 
 uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint16_t* val);
 
 int client_connect(char* server_ip, int port);
+void client_close(int sock);
 int server_init(char* server_ip, int port);
+void server_close(int sock);
+void server_create_err_apdu(uint8_t function_code, uint8_t exception_code, uint8_t** resp_apdu, uint16_t* resp_apdu_size);
+void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val);
 #endif

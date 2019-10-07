@@ -20,22 +20,104 @@ int server_init(char* server_ip, int port) {
     return server_socket;
 }
 
-uint16_t Get_request (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
-    uint16_t TI = Receive_Modbus_request (fd , APDU , APDUlen);
-    // extract parameters from APDU ,
-    // returns: TI and parameters ok, <0 error
-    return 0;
-}
+void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
 
-uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
-    // prepare and send response APDU
+    while(1){
+    uint16_t transaction_id;
+    uint8_t* req_apdu;
+    uint16_t req_apdu_size;
     uint8_t* resp_apdu;
     uint16_t resp_apdu_size;
+
+    // Receive apdu
+    transaction_id = Receive_Modbus_request (fd , &req_apdu , &req_apdu_size);
+
+    // Process apdu
+    op = req_apdu[0];
+    switch (op) {
+        case READ_REGS:
+            st = ((req_apdu[1]) << 8) | (req_apdu[2]);
+            n = ((req_apdu[3]) << 8) | (req_apdu[4]);
+    
+            if (n < 1 || n > 125) {
+                server_create_err_apdu(READ_REGS, ILLEGAL_DATA_VALUE, resp_apdu, resp_apdu_size);
+            }
+            else {
+                *resp_apdu_size = 2 + n * 2;
+                *resp_apdu = malloc(*resp_apdu_size);
+        
+                (*resp_apdu)[0] = READ_REGS;
+                (*resp_apdu)[1] = n * 2;
+        
+                for (uint16_t i = 0; i < n; i++) {
+                    (*resp_apdu)[2 + i * 2]=((val)>>8)) & 0xFF; 
+                    (*resp_apdu)[2 + i * 2 + 1]=((val) & 0xFF);   
+                }
+            }break;
+            
+        case WRITE_REGS:
+            server_process_write_multiple_regs(req_apdu, req_apdu_size, driver, resp_apdu, resp_apdu_size);
+    
+            st = ((req_apdu[1]) << 8) | (req_apdu[2]);
+            n = ((req_apdu[3]) << 8) | (req_apdu[4]);
+            uint8_t byte_count = req_apdu[5];
+    
+            if (n < 1 || n > 123 || byte_count != n * 2) {
+                server_create_err_apdu(WRITE_REGS, ILLEGAL_DATA_ADDRESS, resp_apdu, resp_apdu_size);
+            }
+            else {
+                for (uint16_t i = 0; i < n; i++) {   
+                    val=((req_apdu[6 + i * 2]) << 8) | (req_apdu[6 + i * 2 + 1]);
+                }
+        
+            *resp_apdu_size = 5;
+            *resp_apdu = malloc(*resp_apdu_size);
+        
+            memcpy(*resp_apdu, req_apdu, 5);
+        }break;
+
+        default:
+            server_create_err_apdu(op, ILLEGAL_FUNCTION, resp_apdu, resp_apdu_size);
+            break;
+    }
+
+    // Send response
+    Send_Modbus_response (transaction_id, resp_apdu , resp_apdu_size);  
+
+    // Free mem
+    free(req_apdu);
+    free(resp_apdu);      
+    
+    server_close(fd);
+    }
+}
+
+
+/*uint16_t Get_request (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
+    TI = Receive_Modbus_request (fd , APDU , APDUlen )
+    // extract parameters from APDU ,
+    // returns: TI and parameters ok, <0 error
+}    
+*/
+
+/*uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
+    // prepare and send response APDU
     Send_Modbus_response (TI, resp_apdu , resp_apdu_size);
     // returns: >0 ok, <0 error
     return 0;
 }
+*/
 
+void server_create_err_apdu(uint8_t function_code, uint8_t exception_code, uint8_t** resp_apdu, uint16_t* resp_apdu_size) {
+    *resp_apdu_size = 2;
+    *resp_apdu = malloc(*resp_apdu_size);
+    (*resp_apdu)[0] = 0x80 + function_code;
+    (*resp_apdu)[1] = exception_code;
+}
+
+void server_close(int sock) {
+    socket_close(s);
+}
 /*----------------------------------------------------------------------------------------------------------*/
 
 // CLIENT
@@ -62,9 +144,9 @@ uint8_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t 
         return INVALID_ADDRESS;
     }
 
-    if (n_r > 123) {
+    /*if (n_r > 123) {
         return TOO_MANY_VALUES;
-    }
+    }*/
     
     //Malloc
     uint16_t apdu_size=6+n_r*2;
@@ -113,9 +195,9 @@ uint8_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uin
         return INVALID_ADDRESS;
     }
 
-    if (n_r > 125) {
+    /*if (n_r > 125) {
         return TOO_MANY_VALUES;
-    }
+    }*/
 
     //Malloc
     uint16_t apdu_size=5;
