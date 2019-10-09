@@ -8,10 +8,9 @@ struct sockaddr_in prepareSocketData (char* address, uint16_t port) {
     struct sockaddr_in server_address = {0};
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
-    int cenas = inet_aton(address, &server_address.sin_addr);
-    printf("CENAS: %d\n\n", cenas);
+    inet_aton(address, &server_address.sin_addr);
     /*if (!inet_aton(address, &server_address.sin_addr)) {
-        return SOCK_INVALID_ADDRESS;
+        return NULL;
     }*/
     return server_address;
 }
