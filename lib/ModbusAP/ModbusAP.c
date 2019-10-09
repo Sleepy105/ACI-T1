@@ -162,7 +162,7 @@ void server_create_err_apdu(uint8_t function_code, uint8_t exception_code, uint8
 }
 
 void server_close(int sock) {
-    socket_close(sock);
+    socketClose(sock);
 }
 /*----------------------------------------------------------------------------------------------------------*/
 
