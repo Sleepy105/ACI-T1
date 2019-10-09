@@ -57,9 +57,11 @@ int serverInit (Server* server, uint16_t port, uint8_t backlog) {
 void serverProcess (int client_socket) {
     
     char* str = calloc(SERVER_BUFFER_SIZE, sizeof(char));
+    int len = 0;
 
 	while (1) {
-        int len = recv(client_socket, str, SERVER_BUFFER_SIZE, 0);
+        len = recv(client_socket, str, SERVER_BUFFER_SIZE, 0);
+        str[len] = 0;
         
         printf("Received: \"%s\", Lenght: %d\n", str, len);
         if (len == 1 && str[0] == '#') { break; }
