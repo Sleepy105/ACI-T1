@@ -19,10 +19,8 @@ int server_init(char* server_ip, int port) {
     listen(server_socket, 5);
     return server_socket;
 }
-
+/*
 void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
-
-    while(1){
     uint16_t transaction_id;
     uint8_t* req_apdu;
     uint16_t req_apdu_size;
@@ -46,10 +44,13 @@ void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, 
                 *resp_apdu_size = 2 + n * 2;
                 *resp_apdu = malloc(*resp_apdu_size);
         
-                (*resp_apdu)[0] = READ_REGS;
+               /* (*resp_apdu)[0] = READ_REGS;
                 (*resp_apdu)[1] = n * 2;
         
                 for (uint16_t i = 0; i < n; i++) {
+                    val[2+i*2]=((req_apdu[2+i*2]));
+                    val[2 + i * 2 + 1]=req_apdu[2 + i * 2 + 1];
+                
                     (*resp_apdu)[2 + i * 2]=((val)>>8)) & 0xFF; 
                     (*resp_apdu)[2 + i * 2 + 1]=((val) & 0xFF);   
                 }
@@ -89,9 +90,8 @@ void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, 
     free(resp_apdu);      
     
     server_close(fd);
-    }
 }
-
+*/
 
 /*uint16_t Get_request (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
     TI = Receive_Modbus_request (fd , APDU , APDUlen )
@@ -100,13 +100,59 @@ void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, 
 }    
 */
 
-/*uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
+uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
     // prepare and send response APDU
-    Send_Modbus_response (TI, resp_apdu , resp_apdu_size);
+    uint8_t* resp_apdu;
+    uint16_t resp_apdu_size;
+
+    // Process apdu
+    switch (op) {
+        case READ_REGS:
+            if (n < 1 || n > 125) {
+                server_create_err_apdu(READ_REGS, ILLEGAL_DATA_VALUE, resp_apdu, resp_apdu_size);
+            }
+
+            else {
+                resp_apdu_size = 2 + n * 2;
+                resp_apdu = malloc(resp_apdu_size); 
+                if(!(resp_apdu)) return -1;
+        
+                (*resp_apdu)[0] = READ_REGS;
+                (*resp_apdu)[1] = n * 2;
+        
+                for (uint16_t i = 0; i < n; i++) {
+                    (*resp_apdu)[2 + i * 2]=((val)>>8)) & 0xFF; 
+                    (*resp_apdu)[2 + i * 2 + 1]=((val) & 0xFF);  
+                }
+            }break;
+            
+        case WRITE_REGS:
+    
+            if (n < 1 || n > 123) {
+                server_create_err_apdu(WRITE_REGS, ILLEGAL_DATA_ADDRESS, resp_apdu, resp_apdu_size);
+            }
+        
+            resp_apdu_size = 5;
+            resp_apdu = malloc(resp_apdu_size);
+            if(!(resp_apdu)) return -1;
+        
+            memcpy(*resp_apdu, val, 5);
+        break;
+
+        default:
+            server_create_err_apdu(op, ILLEGAL_FUNCTION, resp_apdu, resp_apdu_size);
+            break;
+    }
+
+    // Send response
+    Send_Modbus_response (transaction_id, resp_apdu , resp_apdu_size);  
+
+    // Free mem
+    free(resp_apdu);      
+
     // returns: >0 ok, <0 error
     return 0;
 }
-*/
 
 void server_create_err_apdu(uint8_t function_code, uint8_t exception_code, uint8_t** resp_apdu, uint16_t* resp_apdu_size) {
     *resp_apdu_size = 2;
@@ -121,7 +167,7 @@ void server_close(int sock) {
 /*----------------------------------------------------------------------------------------------------------*/
 
 // CLIENT
-int client_connect(char* server_ip, int port) {
+/*int client_connect(char* server_ip, int port) {
     int sock = socket(PF_INET, SOCK_STREAM, 0);
     if(!(sock>=0)) printf("%s\n", "Error creating socket");
    
@@ -134,7 +180,7 @@ int client_connect(char* server_ip, int port) {
     if(!(res >= 0))  printf("%s\n", "Error connecting to socket");
     
     return sock;
-}
+}*/
 
 uint8_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uint16_t* val) {
     
@@ -143,10 +189,6 @@ uint8_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t 
     if (!inet_aton(server_add, &server_address.sin_addr)) {
         return INVALID_ADDRESS;
     }
-
-    /*if (n_r > 123) {
-        return TOO_MANY_VALUES;
-    }*/
     
     //Malloc
     uint16_t apdu_size=6+n_r*2;
@@ -195,10 +237,6 @@ uint8_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uin
         return INVALID_ADDRESS;
     }
 
-    /*if (n_r > 125) {
-        return TOO_MANY_VALUES;
-    }*/
-
     //Malloc
     uint16_t apdu_size=5;
     uint8_t* apdu=malloc(apdu_size);
@@ -237,9 +275,9 @@ uint8_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uin
     return 0;
 }
 
-void client_close(int sock) {
+/*void client_close(int sock) {
     close(sock);
-}
+}*/
 
 /*
 uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, bool* val){
