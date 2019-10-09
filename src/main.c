@@ -16,13 +16,23 @@ Server server;
 
 int main(int argc, char const *argv[])
 {
-    serverInit(&server, 5502);
+    if (serverInit(&server, 5502, 10)) {
+        printf("Error starting the server\n");
+        return -1;
+    }
+    pthread_t thread;
+    pthread_create(&thread, NULL, &thread_serverLoop, &server);
 
-    
     int socket = socketCreate();
-    printf("Socket: %d\n", socket);
-    int res = socketConnect(socket, "127.0.0.1", 5502);
-    printf("Res: %d\n", res);
+    if (socket < 0) {
+        printf("Error creating the client's socket.\n");
+        return -1;
+    }
+    if (socketConnect(socket, "127.0.0.1", 5502) < 0) {
+        printf("Error connecting to the server.\n");
+        socketClose(socket);
+        return -1;
+    }
 
     char buf[BUFFER_LENGTH] = {0};
     while (1) {
@@ -46,16 +56,11 @@ int main(int argc, char const *argv[])
             buf[i] = 0;
         }
 
-        // Read the socket
         r = socketRead(socket, buf, BUFFER_LENGTH);
-        if (r < 0) {
-            printf("Error receiving: %d\n", r);
+        if (!r) {
+            printf("Error Receiving (client)\n");
         }
-        else {
-            printf("RECEIVED %d bytes: %s\n", r, buf);
-        }
-
-        printf("%s\n", buf);
+        printf("Received from server: %s\n", buf);
     }
 
     socketClose(socket);
