@@ -16,27 +16,27 @@
 #define TESTE 0
 
 void c_write_multiple_regs(char* server_add, int port) {
-    int size;
-    int pos;
+    uint16_t size=0;
+    uint16_t pos=0;
     
     printf("\n---> Enter size to write multiple regs: ");
-    scanf("%d", size);
+    scanf("%hu", &size);
 
     printf("\n---> Enter pos to write multiple regs: ");
-    scanf("%d", pos);    
+    scanf("%hu", &pos);    
 
-    printf("\nW %d regs at position %d: ", size, pos);
+    printf("\nW %hu regs at position %hu: ", size, pos);
     
     uint16_t* values = malloc(size);
     for (int i = 0; i < size; i++) {
         printf("\n---> Enter values[%d]: ", i);
-        scanf("%d", values[i]);
+        scanf("%hu", &values[i]);
     }
     
-    uint8_t result = Write_multiple_regs(server_add, port, pos, size, values); 
+    uint16_t result = Write_multiple_regs(server_add, port, pos, size, values); 
     
     if (result) {
-        printf("error code: %d\n", result);
+        printf("error code: %hu\n", result);
     }
     else {
         printf("successful:");
@@ -50,22 +50,22 @@ void c_write_multiple_regs(char* server_add, int port) {
 }
 
 void c_read_h_regs(char* server_add, int port) {
-    int size;
-    int pos;
+    uint16_t size=0;
+    uint16_t pos=0;
     
     printf("\n---> Enter size to read h regs: ");
-    scanf("%d", size);
+    scanf("%hu", &size);
 
     printf("\n---> Enter pos to read r regs: ");
-    scanf("%d", pos);    
+    scanf("%hu", &pos);    
 
-    printf("\nR %d regs at position %d: ", size, pos);
+    printf("\nR %hu regs at position %hu: ", size, pos);
     uint16_t* values;
 
-    uint8_t result = Read_h_regs(server_add, port, pos, size, &values);
+    uint16_t result = Read_h_regs(server_add, port, pos, size, &values);
     
     if (result) {
-        printf("error code: %d\n", result);
+        printf("error code: %hu\n", result);
     }
     else {
         printf("successful:");
@@ -81,21 +81,19 @@ void c_read_h_regs(char* server_add, int port) {
 int main(int argc, char* argv[]) {
     int s = client_connect(SERVER_ADD, PORT);
     printf("Connected to server\n");
-    int teste=TESTE;
+    int teste_c=TESTE;
 
-    while (1) {
-        switch (teste) {
-            case 0:
-                c_write_multiple_regs(SERVER_ADD, PORT);
-                break;
-            case 1:
-                c_read_h_regs(SERVER_ADD, PORT);
-                break;
-            default:
-                break;
+    switch (teste_c) {
+        case 0:
+            c_write_multiple_regs(SERVER_ADD, PORT);
+            break;
+        case 1:
+            c_read_h_regs(SERVER_ADD, PORT);
+            break;
+        default:
+            break;
         }
         
-    }
     
     client_close(s);
     printf("Disconnected from server\n");

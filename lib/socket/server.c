@@ -1,6 +1,7 @@
 // server.c
 
 #include "ModbusAp.h"
+#include "device.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -14,14 +15,16 @@
 #define SERVER_IP "127.0.0.1"
 #define PORT 5502
 
+/*
 int main(int argc, char* argv[]) {
-    /*int s = server_init(SERVER_IP, PORT);
+    int s = server_init(SERVER_IP, PORT);
+
+    printf("Connected to client\n");
+
     device* driver = device_new();
-    
-    server_start(s, driver);
-    
-    server_close(s);
+
+    close(s);
     device_free(driver);
     
-    return 0;*/
-}
+    return 0;
+}*/

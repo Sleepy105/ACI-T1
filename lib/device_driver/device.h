@@ -15,7 +15,7 @@
 
 typedef struct _device {
     uint16_t regs[DEVICE_SIZE];
-    bool_t coils[DEVICE_SIZE];
+    //bool_t coils[DEVICE_SIZE];
     uint16_t size;
 } device;
 
