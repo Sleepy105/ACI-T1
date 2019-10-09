@@ -74,7 +74,7 @@ void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, 
             *resp_apdu_size = 5;
             *resp_apdu = malloc(*resp_apdu_size);
         
-            memcpy(*resp_apdu, req_apdu, 5);
+            memcpy(resp_apdu, req_apdu, 5);
         }break;
 
         default:
@@ -109,7 +109,7 @@ uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint1
     switch (op) {
         case READ_REGS:
             if (n < 1 || n > 125) {
-                server_create_err_apdu(READ_REGS, ILLEGAL_DATA_VALUE, resp_apdu, resp_apdu_size);
+                server_create_err_apdu(READ_REGS, ILLEGAL_DATA_VALUE, &resp_apdu, &resp_apdu_size);
             }
 
             else {
@@ -117,35 +117,35 @@ uint16_t Send_response(uint16_t TI, uint16_t op, uint16_t st , uint16_t n, uint1
                 resp_apdu = malloc(resp_apdu_size); 
                 if(!(resp_apdu)) return -1;
         
-                (*resp_apdu)[0] = READ_REGS;
-                (*resp_apdu)[1] = n * 2;
+                resp_apdu[0] = READ_REGS;
+                resp_apdu[1] = n * 2;
         
                 for (uint16_t i = 0; i < n; i++) {
-                    (*resp_apdu)[2 + i * 2]=((val)>>8)) & 0xFF; 
-                    (*resp_apdu)[2 + i * 2 + 1]=((val) & 0xFF);  
+                    resp_apdu[2 + i * 2] = (val[st+i] >> 8) & 0xFF; 
+                    resp_apdu[2 + i * 2 + 1] = val[st+i] & 0xFF;  
                 }
             }break;
             
         case WRITE_REGS:
     
             if (n < 1 || n > 123) {
-                server_create_err_apdu(WRITE_REGS, ILLEGAL_DATA_ADDRESS, resp_apdu, resp_apdu_size);
+                server_create_err_apdu(WRITE_REGS, ILLEGAL_DATA_ADDRESS, &resp_apdu, &resp_apdu_size);
             }
         
             resp_apdu_size = 5;
             resp_apdu = malloc(resp_apdu_size);
             if(!(resp_apdu)) return -1;
         
-            memcpy(*resp_apdu, val, 5);
+            memcpy(resp_apdu, val, 5);
         break;
 
         default:
-            server_create_err_apdu(op, ILLEGAL_FUNCTION, resp_apdu, resp_apdu_size);
+            server_create_err_apdu(op, ILLEGAL_FUNCTION, &resp_apdu, &resp_apdu_size);
             break;
     }
 
     // Send response
-    Send_Modbus_response (transaction_id, resp_apdu , resp_apdu_size);  
+    Send_Modbus_response (TI, resp_apdu , resp_apdu_size);  
 
     // Free mem
     free(resp_apdu);      
@@ -162,7 +162,7 @@ void server_create_err_apdu(uint8_t function_code, uint8_t exception_code, uint8
 }
 
 void server_close(int sock) {
-    socket_close(s);
+    socket_close(sock);
 }
 /*----------------------------------------------------------------------------------------------------------*/
 
@@ -196,8 +196,8 @@ uint8_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t 
     
     //Write header
     apdu[0]=0x10;
-    apdu[1]=((st_r)>>8)) & 0xFF; apdu[2]=((st_r) & 0xFF);  
-    apdu[3]=((n_r)>>8)) & 0xFF; apdu[4]=((n_r) & 0xFF);    
+    apdu[1]=((st_r)>>8) & 0xFF; apdu[2]=((st_r) & 0xFF);  
+    apdu[3]=((n_r)>>8) & 0xFF; apdu[4]=((n_r) & 0xFF);    
     apdu[5]=2*n_r;
     
     //Load values
@@ -243,8 +243,8 @@ uint8_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uin
     
     //Write header
     apdu[0]=0x03;
-    apdu[1]=((st_r)>>8)) & 0xFF; apdu[2]=((st_r) & 0xFF);  
-    apdu[3]=((n_r)>>8)) & 0xFF; apdu[4]=((n_r) & 0xFF);      
+    apdu[1]=((st_r)>>8) & 0xFF; apdu[2]=((st_r) & 0xFF);  
+    apdu[3]=((n_r)>>8) & 0xFF; apdu[4]=((n_r) & 0xFF);      
     
     //Send & Receive
     uint8_t* r_apdu;
@@ -254,25 +254,24 @@ uint8_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uin
     
     //Check the response
     uint8_t r_code=r_apdu[0];
-    uint8_t r_val;
+    uint8_t r_val = 0;
+    
     if(r_code==0x03){
-         r_val=NO_ERROR;
-         uint16_t *val_count r_apdu[1]/2;
-         *val malloc(*val_count);
+        r_val = r_apdu[1]/2;
 
         for (uint16_t i=0; i < n_r; i++) {
-            (*val)[i] = ((r_apdu[2+i*2]) << 8) | (r_apdu[2+i*2+1]);
+            val[st_r + i] = ((r_apdu[2+i*2]) << 8) | (r_apdu[2+i*2+1]);
         } 
     }
     else {
-        r_val==r_apdu[1]; // exception_code 
+        r_val = r_apdu[1]; // exception_code 
     }
   
     //Free
     free(apdu);
     free(r_apdu);
         
-    return 0;
+    return r_val;
 }
 
 /*void client_close(int sock) {
