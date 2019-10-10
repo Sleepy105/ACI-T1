@@ -34,16 +34,16 @@ int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t a
         return -1;
     }
     free(request_frame);
+    // TODO timeout error
 
     // read response or timeout
     uint8_t r_mbap[7] = {0};
     if (socketRead(socket, r_mbap, 7) == 7) {
         return -1;
     }
-    // TODO timeout error
 
     // if response, remove MBAP and PDU_R -> APDU_R
-    size_t r_apdu_size = (uint16_t)((r_mbap[4] << 8) | r_mbap[5]) - 1;
+    size_t r_apdu_size = ((((uint16_t)r_mbap[4]) << 8) | r_mbap[5]) -1;
     
     uint8_t* r_apdu = (uint8_t*)malloc(r_apdu_size);
     if (!r_apdu) {
@@ -60,8 +60,36 @@ int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t a
     return 0;
 }
 
-int Receive_Modbus_response(int fd, uint8_t* apdu , size_t apdu_len) {
-    return 0;
+int Receive_Modbus_response(int fd, uint8_t* APDU , size_t APDUlen) {
+    struct sockaddr_in cli_addr;
+    socklen_t client_addr_length = sizeof(cli_addr);
+    
+    // waits for TCP connection, saves (global) data socket id
+    int fd2 = accept(fd, (struct sockaddr *) &cli_addr, &client_addr_length);
+    if (fd2 < -1) {
+        return -1;
+    }
+
+    // read MBAP of request PDU
+    uint8_t r_mbap[7] = {0};
+    if (socketRead(fd2, r_mbap, 7) == 7) {
+        return -1;
+    }
+
+    // remove MBAP: TI and length (APDUlen + 1)
+    uint16_t response_length = ((((uint16_t)r_mbap[4]) << 8) | r_mbap[5]) -1;
+    if (APDUlen < response_length) {
+        return -1;
+    }
+    // read response APDU
+    if (socketRead(fd2, APDU, APDUlen) < 0) {
+        return -1;
+    }
+
+    // returns: APDU and TI – ok, <0 – erro
+    uint16_t TI = (((uint16_t)r_mbap[0]) << 8) | r_mbap[1];
+    // TODO: Add TI and fd2 to a dict
+    return TI;
 }
 
 int Send_Modbus_response(int TI, uint8_t* resp_apdu , size_t resp_apdu_size) {
