@@ -62,7 +62,7 @@ void c_read_h_regs(char* server_add, int port) {
     printf("\nR %hu regs at position %hu: ", size, pos);
     uint16_t* values;
 
-    uint16_t result = Read_h_regs(server_add, port, pos, size, &values);
+    uint16_t result = Read_h_regs(server_add, port, pos, size, values);
     
     if (result) {
         printf("error code: %hu\n", result);

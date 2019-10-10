@@ -12,6 +12,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include "socket.h"
+#include "ModbusTCP.h"
+#include "device.h"
+
 /** ERROR TYPES **/
 #define INVALID_ADDRESS -1
 #define TOO_MANY_VALUES -2

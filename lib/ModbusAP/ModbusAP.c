@@ -23,11 +23,11 @@ int server_init(char* server_ip, int port) {
 uint16_t Get_request (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val){
 
     uint16_t transaction_id;
-    uint8_t* req_apdu;
+    uint8_t* req_apdu=0;
     uint16_t req_apdu_size;
 
     // Receive apdu
-    transaction_id = Receive_Modbus_request (fd , &req_apdu , &req_apdu_size);
+    transaction_id = Receive_Modbus_request (fd , req_apdu , &req_apdu_size);
 
     // extract parameters from APDU
     op = req_apdu[0];
@@ -192,7 +192,7 @@ uint16_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t
     
     //Send & Receive
     uint8_t* r_apdu;
-    if(!Send_Modbus_request (server_add,  port, apdu, apdu_size, r_apdu)){
+    if(!Send_Modbus_request (server_add,  port, apdu, apdu_size, &r_apdu)){
         return ERROR_REQUEST;
     }
     
@@ -232,7 +232,7 @@ uint16_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, ui
     
     //Send & Receive
     uint8_t* r_apdu;
-    if(!Send_Modbus_request (server_add,  port, apdu, apdu_size, r_apdu)){
+    if(!Send_Modbus_request (server_add,  port, apdu, apdu_size, &r_apdu)){
         return ERROR_REQUEST;
     }
     
