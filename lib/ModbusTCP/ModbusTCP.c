@@ -2,9 +2,6 @@
 
 
 int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t apdu_size, uint8_t* r_apdu) {
-    if (port > 65535) {
-        return -1;
-    }
     if (!r_apdu) {
         return -1;
     }
@@ -59,13 +56,13 @@ int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t a
     }
 
     // if response, remove MBAP and PDU_R -> APDU_R
-    size_t r_apdu_size = ((((uint16_t)r_mbap[4]) << 8) | r_mbap[5]) -1;
+    int r_apdu_size = ((((uint16_t)r_mbap[4]) << 8) | r_mbap[5]) -1;
     
-    uint8_t* r_apdu = (uint8_t*)malloc(r_apdu_size);
+    r_apdu = (uint8_t*)malloc(r_apdu_size);
     if (!r_apdu) {
         return -1;
     }
-    if (socketRead(socket, r_apdu, r_apdu_size) != r_apdu_size) {
+    if (socketRead(socket, r_apdu, r_apdu_size) < r_apdu_size) {
         return -1;
     }
 
@@ -126,7 +123,7 @@ int Send_Modbus_response(uint16_t TI, uint8_t* resp_apdu , size_t resp_apdu_size
     PDU[4] = (uint8_t)(length>>8);
     PDU[5] = (uint8_t)(length);
     PDU[6] = (uint8_t)(unit_id);
-    for (int i = 7; i < pdu_size; i++) {
+    for (size_t i = 7; i < pdu_size; i++) {
         PDU[i] = resp_apdu[i-7];
     }
     
