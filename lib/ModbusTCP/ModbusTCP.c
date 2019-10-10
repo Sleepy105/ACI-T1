@@ -15,22 +15,38 @@ int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t a
     // assemble the PDU = APDU(SDU) + MBAP
     uint16_t PI = 0x0000;
     uint16_t length = apdu_size + 1;
-    uint8_t* request_frame = (uint8_t*)malloc((7+apdu_size)*sizeof(uint8_t));
+    uint8_t unit_id = 0x01;
+    uint16_t total_frame_size = 7+apdu_size;
+    uint8_t* request_frame = (uint8_t*)malloc(total_frame_size*sizeof(uint8_t));
     if (!request_frame) {
         return -1;
+    }
+
+    request_frame[0] = (uint8_t)(TI>>8);
+    request_frame[1] = (uint8_t)(TI);
+    request_frame[2] = (uint8_t)(PI>>8);
+    request_frame[3] = (uint8_t)(PI);
+    request_frame[4] = (uint8_t)(length>>8);
+    request_frame[5] = (uint8_t)(length);
+    request_frame[6] = (uint8_t)(unit_id);
+    for (int i = 7; i < total_frame_size; i++) {
+        request_frame[i] = apdu[i-7];
     }
 
     // open a client socket and connect to the server
     int socket = socketCreate();
     if (socket < 0) {
+        free(request_frame);
         return -1;
     }
     if (socketConnect(socket, server_add, port) < 0) {
+        free(request_frame);
         return -1;
     }
 
     // send data
     if (socketWrite(socket, request_frame, length) < 0) {
+        free(request_frame);
         return -1;
     }
     free(request_frame);
@@ -92,6 +108,36 @@ int Receive_Modbus_response(int fd, uint8_t* APDU , size_t APDUlen) {
     return TI;
 }
 
-int Send_Modbus_response(int TI, uint8_t* resp_apdu , size_t resp_apdu_size) {
-    return 0;
+int Send_Modbus_response(uint16_t TI, uint8_t* resp_apdu , size_t resp_apdu_size) {
+    // TODO: Find fd2 from TI
+    int fd2 = 0;
+    
+    // assembles PDU = APDU_R + MBAP (with TI)
+    uint16_t PI = 0x0000;
+    uint16_t length = resp_apdu_size + 1;
+    uint8_t unit_id = 0x01;
+    size_t pdu_size = resp_apdu_size+7;
+    uint8_t* PDU = (uint8_t*)malloc(pdu_size*sizeof(uint8_t));
+
+    PDU[0] = (uint8_t)(TI>>8);
+    PDU[1] = (uint8_t)(TI);
+    PDU[2] = (uint8_t)(PI>>8);
+    PDU[3] = (uint8_t)(PI);
+    PDU[4] = (uint8_t)(length>>8);
+    PDU[5] = (uint8_t)(length);
+    PDU[6] = (uint8_t)(unit_id);
+    for (int i = 7; i < pdu_size; i++) {
+        PDU[i] = resp_apdu[i-7];
+    }
+    
+    //sends ModbusTCP response PDU
+    size_t written_bytes = socketWrite(fd2, PDU, pdu_size);
+    if (written_bytes < pdu_size) {
+        free(PDU);
+        return -1;
+    }
+    free(PDU);
+
+    // returns: >0 – ok, <0 – erro
+    return written_bytes;
 }
