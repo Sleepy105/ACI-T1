@@ -36,7 +36,7 @@
  * @param val Value of those registers
  * @return int8_t Return code. If OK: number of written registers. If ERROR: <0
  */
-uint8_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uint16_t* val);
+uint16_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uint16_t* val);
 
 /**
  * @brief Send n_c coils to a host located in server_add
@@ -60,7 +60,7 @@ uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, boo
  * @param val Value of those registers
  * @return int8_t Return code. If OK: number of read registers. If ERROR: <0
  */
-uint8_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uint16_t* val);
+uint16_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, uint16_t* val);
 
 /**
  * @brief Read n_c coils from a host located in server_add
