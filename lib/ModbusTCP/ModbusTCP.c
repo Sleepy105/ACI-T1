@@ -1,5 +1,7 @@
 #include "ModbusTCP.h"
 
+int savedSocket = 0;
+uint16_t savedTI = 0;
 
 int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t apdu_size, uint8_t* r_apdu) {
     if (!r_apdu) {
@@ -102,12 +104,14 @@ int Receive_Modbus_response(int fd, uint8_t* APDU , size_t APDUlen) {
     // returns: APDU and TI – ok, <0 – erro
     uint16_t TI = (((uint16_t)r_mbap[0]) << 8) | r_mbap[1];
     // TODO: Add TI and fd2 to a dict
+    savedTI = TI;
+    savedSocket = fd2;
     return TI;
 }
 
 int Send_Modbus_response(uint16_t TI, uint8_t* resp_apdu , size_t resp_apdu_size) {
     // TODO: Find fd2 from TI
-    int fd2 = 0;
+    int fd2 = savedSocket;
     
     // assembles PDU = APDU_R + MBAP (with TI)
     uint16_t PI = 0x0000;
