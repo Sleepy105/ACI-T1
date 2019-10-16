@@ -6,7 +6,7 @@ int getServerCoil (Server* server, size_t n) {
         return SOCK_VALUE_OUT_OF_BOUNDS;
     }
 
-    if (n > N_COILS) {
+    if (n > SERVER_N_COILS) {
         return SOCK_VALUE_OUT_OF_BOUNDS;
     }
 
@@ -22,7 +22,7 @@ int setServerCoil (Server* server, size_t n, bool value) {
         return SOCK_VALUE_OUT_OF_BOUNDS;
     }
 
-    if (n > N_COILS) {
+    if (n > SERVER_N_COILS) {
         return SOCK_VALUE_OUT_OF_BOUNDS;
     }
 
@@ -64,7 +64,9 @@ void serverProcess (int client_socket) {
         str[len] = 0;
         
         printf("Received: \"%s\", Lenght: %d\n", str, len);
-        if (len == 1 && str[0] == '#') { break; }
+        if (len == 1 && str[0] == '#') {
+            break;
+        }
         
         int p;
         for (p = 0; str[p] != '\0'; p++) {
