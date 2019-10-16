@@ -44,46 +44,84 @@ int clientInit (Client* client, char* name, char* address, uint16_t port) {
         return -1;
     }
 
-    client->socket = socketCreate();
-    if (client->socket < 0) {
-        return -1;
-    }
-
     client->name = malloc((strlen(name)+1)*sizeof(char));
     strncpy(client->name, name, (strlen(name)+1));
 
-    int res = socketConnect(client->socket, address, port);
-    if (res < 0) {
-        return -1;
-    }
+    client->server_address = malloc((strlen(address)+1)*sizeof(char));
+    strncpy(client->server_address, address, (strlen(address)+1));
+
+    client->port = port;
 
     return 0;
 }
 
-void clientProcess (Client* client) {
+
+void clientClose (Client* client) {
+    if (client->name) {
+        free(client->name);
+    }
+    if (client->server_address) {
+        free(client->server_address);
+    }
+    client->port = 0;
+}
+
+int clientReadRegs (Client* client, uint16_t start, uint16_t n) {
     if (!client) {
         return;
     }
 
-    char* str = calloc(CLIENT_BUFFER_SIZE, sizeof(char));
-
-    printf("\n---> [client %s] Enter string to send: ", client->name);
-    scanf("%s", str);
-    socketWrite(client->socket, str, strlen(str));
-    
-    int len = recv(client->socket, str, CLIENT_BUFFER_SIZE, 0);
-    if (len <= 0) {
-        printf("[client %s] ERROR receiving from server\n", client->name);
+    uint16_t res = Read_h_regs(client->server_address, client->port, start, n, client->h_regs);
+    printf("[client %s] H_REGS:\n\t", client->name);
+    for (uint16_t i = 0; i < CLIENT_N_REGS; i++) {
+        printf("%d, ", client->h_regs[i]);
     }
-    
-    printf("[client %s] Received from server: %s", client->name, str);
-    return;
+    printf("\n");
+
+    return res;
 }
 
-void clientClose (Client* client) {
-    socketClose(client->socket);
-    client->socket = 0;
-    if (client->name) {
-        free(client->name);
+int clientWriteRegs (Client* client, uint16_t start, uint16_t n) {
+    if (!client) {
+        return;
     }
+
+    uint16_t res = Write_multiple_regs(client->server_address, client->port, start, n, client->h_regs);
+    printf("[client %s] H_REGS:\n\t", client->name);
+    for (uint16_t i = 0; i < CLIENT_N_REGS; i++) {
+        printf("%d, ", client->h_regs[i]);
+    }
+    printf("\n");
+
+    return res;
+}
+
+int clientReadCoils (Client* client, uint16_t start, uint16_t n) {
+    if (!client) {
+        return;
+    }
+
+    uint16_t res = Read_coils(client->server_address, client->port, start, n, client->coils);
+    printf("[client %s] COILS:\n\t", client->name);
+    for (uint16_t i = 0; i < CLIENT_N_COILS; i++) {
+        printf("%d, ", client->coils[i]);
+    }
+    printf("\n");
+
+    return res;
+}
+
+int clientWriteCoils (Client* client, uint16_t start, uint16_t n) {
+    if (!client) {
+        return;
+    }
+
+    uint16_t res = Write_multiple_coils(client->server_address, client->port, start, n, client->coils);
+    printf("[client %s] COILS:\n\t", client->name);
+    for (uint16_t i = 0; i < CLIENT_N_COILS; i++) {
+        printf("%d, ", client->coils[i]);
+    }
+    printf("\n");
+
+    return res;
 }
