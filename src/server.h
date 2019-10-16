@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 #include <socket.h>
+#include "ModbusAP.h"
 
 #define SERVER_BUFFER_SIZE 100
 #define SERVER_N_REGS 20
@@ -22,6 +23,11 @@ typedef struct {
     uint8_t coils[SERVER_N_COILS];
 } Server;
 
+typedef struct {
+    int socket;
+    Server* server;
+} thread_args;
+
 int getServerCoil (Server* server, size_t n);
 
 int setServerCoil (Server* server, size_t n, bool value);
@@ -30,7 +36,7 @@ int serverInit (Server* server, char* self_address, uint16_t port, uint8_t backl
 
 void serverClose (Server* server);
 
-void serverProcess (int client_socket);
+void serverProcess (Server* server, int client_socket);
 
 void serverLoop (Server* server);
 

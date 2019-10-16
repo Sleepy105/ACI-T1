@@ -76,7 +76,7 @@ void serverClose (Server* server) {
     server->backlog = 0;
 }
 
-void serverProcess (int client_socket) {
+void serverProcess (Server* server, int client_socket) {
     
     char* str = calloc(SERVER_BUFFER_SIZE, sizeof(char));
     int len = 0;
@@ -103,8 +103,10 @@ void serverProcess (int client_socket) {
 }
 
 void* thread_serverProcess (void* arg) {
-    int* client_socket = arg;
-    serverProcess(*client_socket);
+    thread_args* args = (thread_args*)arg;
+    int client_socket = args->socket;
+    Server* server = args->server;
+    serverProcess(server, client_socket);
     return 0;
 }
 
@@ -121,7 +123,10 @@ void serverLoop (Server* server) {
         printf("New client Connection\n");
         // serverProcess(new_socket);
         pthread_t thread;
-        pthread_create(&thread, NULL, &thread_serverProcess, &new_socket);
+        thread_args* args = calloc(1, sizeof(thread_args));
+        args->socket = new_socket;
+        args->server = server;
+        pthread_create(&thread, NULL, &thread_serverProcess, args);
     }
 }
 
