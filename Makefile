@@ -17,7 +17,8 @@ INC_DIRS += $(LIBPQ_INCLUDE_DIR)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
-LDFLAGS ?= -pthread -lpq
+LDFLAGS ?= -pthread
+#-lpq
 
 
 #$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
