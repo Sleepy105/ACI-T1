@@ -3,9 +3,9 @@
 int savedSocket = 0;
 uint16_t savedTI = 0;
 
-int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t apdu_size, uint8_t* r_apdu) {
-    if (!r_apdu) {
-        return -1;
+int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t apdu_size, uint8_t** r_apdu) {
+    if (*r_apdu) {
+        free(r_apdu);
     }
     // Generate the TI (transaction identifier)
     static uint16_t TI = 0;
@@ -44,7 +44,7 @@ int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t a
     }
 
     // send data
-    if (socketWrite(socket, request_frame, length) < 0) {
+    if (socketWrite(socket, request_frame, total_frame_size) < 0) {
         free(request_frame);
         return -1;
     }
@@ -53,18 +53,18 @@ int Send_Modbus_request(char* server_add, uint16_t port, uint8_t* apdu, size_t a
 
     // read response or timeout
     uint8_t r_mbap[7] = {0};
-    if (socketRead(socket, r_mbap, 7) == 7) {
+    if (socketRead(socket, r_mbap, 7) != 7) {
         return -1;
     }
 
     // if response, remove MBAP and PDU_R -> APDU_R
     int r_apdu_size = ((((uint16_t)r_mbap[4]) << 8) | r_mbap[5]) -1;
     
-    r_apdu = (uint8_t*)malloc(r_apdu_size);
-    if (!r_apdu) {
+    *r_apdu = (uint8_t*)malloc(r_apdu_size);
+    if (!*r_apdu) {
         return -1;
     }
-    if (socketRead(socket, r_apdu, r_apdu_size) < r_apdu_size) {
+    if (socketRead(socket, *r_apdu, r_apdu_size) < r_apdu_size) {
         return -1;
     }
 
