@@ -8,19 +8,18 @@
 
 #define BUFFER_LENGTH 32
 
+#define SERVER_ADDRESS_FOR_CLIENT_CONNECTION "192.168.113.33"
+#define SERVER_PORT_FOR_CLIENT_CONNECTION 5502
+#define NUMBER_OF_CLIENTS 2
+
 Server server;
+Client client[NUMBER_OF_CLIENTS];
 
-Client client1;
-Client client2;
-
-/* bool test_1 (void* server, void* client) {
-    int res = client.write_multiple_regs(server);
-    
-}*/
 
 // int main(int argc, char const *argv[]) {
 int main() {
-    if (serverInit(&server, 5502, 10)) {
+    // INIT SERVER
+    if (serverInit(&server, SERVER_ADDRESS_FOR_CLIENT_CONNECTION, SERVER_PORT_FOR_CLIENT_CONNECTION, 10)) {
         printf("Error starting the server\n");
         return -1;
     }
@@ -30,26 +29,30 @@ int main() {
     pthread_t thread;
     pthread_create(&thread, NULL, &thread_serverLoop, &server);
 
-    if (clientInit(&client1, "1", "127.0.0.1", 5502)) {
-        printf("ERROR creating client 1\n");
-    }
-    else {
-        printf("Client 1 started\n");
-    }
-    if (clientInit(&client2, "2", "127.0.0.1", 5502)) {
-        printf("ERROR creating client 2\n");
-    }
-    else {
-        printf("Client 2 started\n");
+    // INIT CLIENTS
+    for (int i = 0; i < NUMBER_OF_CLIENTS; i++) {
+        if (clientInit(&client[i], "1", SERVER_ADDRESS_FOR_CLIENT_CONNECTION, SERVER_PORT_FOR_CLIENT_CONNECTION)) {
+            printf("ERROR creating client 1\n");
+        }
+        else {
+            printf("Client 1 started\n");
+        }
     }
 
+
+    // RUN TESTS
     while (1) {
-        clientProcess(&client1);
-        clientProcess(&client2);
+        for (int i = 0; i < NUMBER_OF_CLIENTS; i++) {
+            clientReadRegs(&client[i], 0, 2);
+        }
     }
 
-    clientClose(&client1);
-    clientClose(&client2);
+
+    // Cleanup
+    for (int i = 0; i < NUMBER_OF_CLIENTS; i++) {
+        clientClose(&client[i]);
+    }
+    serverClose(&server);
     printf("Connection Closed\n");
 
     return 0;
