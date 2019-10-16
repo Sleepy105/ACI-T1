@@ -68,7 +68,7 @@ void clientClose (Client* client) {
 
 int clientReadRegs (Client* client, uint16_t start, uint16_t n) {
     if (!client) {
-        return;
+        return -1;
     }
 
     uint16_t res = Read_h_regs(client->server_address, client->port, start, n, client->h_regs);
@@ -83,7 +83,7 @@ int clientReadRegs (Client* client, uint16_t start, uint16_t n) {
 
 int clientWriteRegs (Client* client, uint16_t start, uint16_t n) {
     if (!client) {
-        return;
+        return -1;
     }
 
     uint16_t res = Write_multiple_regs(client->server_address, client->port, start, n, client->h_regs);
@@ -98,7 +98,7 @@ int clientWriteRegs (Client* client, uint16_t start, uint16_t n) {
 
 int clientReadCoils (Client* client, uint16_t start, uint16_t n) {
     if (!client) {
-        return;
+        return -1;
     }
 
     uint16_t res = Read_coils(client->server_address, client->port, start, n, client->coils);
@@ -113,7 +113,7 @@ int clientReadCoils (Client* client, uint16_t start, uint16_t n) {
 
 int clientWriteCoils (Client* client, uint16_t start, uint16_t n) {
     if (!client) {
-        return;
+        return -1;
     }
 
     uint16_t res = Write_multiple_coils(client->server_address, client->port, start, n, client->coils);
