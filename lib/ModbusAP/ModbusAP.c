@@ -262,6 +262,14 @@ void client_close(int sock) {
     close(sock);
 }
 
+uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, uint8_t* val) {
+    return -1;
+}
+
+uint16_t Read_coils(char* server_add, int port, int st_c, int n_c, uint8_t* val) {
+    return -1;
+}
+
 /*
 uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, uint8_t* val){
  //Malloc
