@@ -191,8 +191,8 @@ uint16_t Write_multiple_regs(char* server_add, int port, uint16_t st_r, uint16_t
     }
     
     //Send & Receive
-    uint8_t* r_apdu=0;
-    if(!Send_Modbus_request (server_add,  port, apdu, apdu_size, r_apdu)){
+    uint8_t* r_apdu = 0;
+    if(Send_Modbus_request (server_add,  port, apdu, apdu_size, &r_apdu) < 0){
         return ERROR_REQUEST;
     }
     
@@ -229,15 +229,15 @@ uint16_t Read_h_regs(char* server_add, int port, uint16_t st_r, uint16_t n_r, ui
     apdu[0]=0x03;
     apdu[1]=((st_r)>>8) & 0xFF; apdu[2]=((st_r) & 0xFF);  
     apdu[3]=((n_r)>>8) & 0xFF; apdu[4]=((n_r) & 0xFF);      
-    
+
     //Send & Receive
-    uint8_t* r_apdu=0;
-    if(!Send_Modbus_request (server_add,  port, apdu, apdu_size, r_apdu)){
+    uint8_t* r_apdu = 0;
+    if(Send_Modbus_request (server_add,  port, apdu, apdu_size, &r_apdu) < 0){
         return ERROR_REQUEST;
     }
-    
+
     //Check the response
-    uint8_t r_code=r_apdu[0];
+    uint8_t r_code = r_apdu[0];
     uint16_t r_val = 0;
     
     if(r_code==READ_REGS){
