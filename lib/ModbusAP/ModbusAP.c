@@ -263,7 +263,7 @@ void client_close(int sock) {
 }
 
 /*
-uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, bool* val){
+uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, uint8_t* val){
  //Malloc
     uint16_t apdu_size=6+n_r/8;
     uint8_t* apdu=malloc(apdu_size);
@@ -302,7 +302,7 @@ uint16_t Write_multiple_coils(char* server_add, int port, int st_c, int n_c, boo
     return 0;
 }
 
-uint16_t Read_coils(char* server_add, int port, int st_c, int n_c, bool* val){
+uint16_t Read_coils(char* server_add, int port, int st_c, int n_c, uint8_t* val){
  //Malloc
     uint16_t apdu_size=5;
     uint8_t* apdu=malloc(apdu_size);
