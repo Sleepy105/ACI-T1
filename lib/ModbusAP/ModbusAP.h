@@ -82,5 +82,4 @@ void client_close(int sock);
 int server_init(char* server_ip, int port);
 void server_close(int sock);
 void server_create_err_apdu(uint8_t function_code, uint8_t exception_code, uint8_t** resp_apdu, uint16_t* resp_apdu_size);
-void Get_request_Send_Response (int fd , uint16_t op, uint16_t st , uint16_t n, uint16_t* val);
 #endif
