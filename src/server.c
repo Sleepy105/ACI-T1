@@ -40,19 +40,41 @@ int setServerCoil (Server* server, size_t n, bool value) {
     return SOCK_OK;
 }
 
+int serverInit (Server* server, char* self_address, uint16_t port, uint8_t backlog) {
+    if (!server) {
+        return -1;
+    }
 
-int serverInit (Server* server, uint16_t port, uint8_t backlog) {
     server->socket = socketCreate();
     if (server->socket < 0) {
         return -1;
     }
+
+    server->self_address = malloc((strlen(self_address)+1)*sizeof(char));
+    strncpy(server->self_address, self_address, (strlen(self_address)+1));
+
     server->port = port;
     server->backlog = backlog;
-    socketBind(server->socket, SERVER_ADDRESS, server->port);
+    socketBind(server->socket, server->self_address, server->port);
     socketListen(server->socket, server->backlog);
     return 0;
 }
 
+void serverClose (Server* server) {
+    if (!server) {
+        return;
+    }
+
+    if (server->self_address) {
+        free(server->self_address);
+    }
+    if (server->socket) {
+        socketClose(server->socket);
+    }
+    server->socket = 0;
+    server->port = 0;
+    server->backlog = 0;
+}
 
 void serverProcess (int client_socket) {
     
